@@ -31,8 +31,8 @@ class BaseModel:
         ----------
         raw_obs: tuple
             raw_obs is a tuple of (view, feature)
-            view is a numpy array, its shape is n * view_width * view_height * n_channel
-                                   it contains the spatial local observation for all the agents
+            view is a numpy array, its shape is n * view_width * view_height * n_channel  # 获取其他agent的位置信息
+                                   it contains the spatial local observation for all the agents  # 获取每个agent的特征
             feature is a numpy array, its shape is n * feature_size
                                    it contains the non-spatial feature for all the agents
         ids: numpy array of int32

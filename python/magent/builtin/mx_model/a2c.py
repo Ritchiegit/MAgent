@@ -10,6 +10,8 @@ from .base import MXBaseModel
 
 
 class AdvantageActorCritic(MXBaseModel):
+    # a2c RL方法
+    # https://zhuanlan.zhihu.com/p/66418465
     def __init__(self, env, handle, name, eval_obs=None,
                  batch_size=64, reward_decay=0.99, learning_rate=1e-3,
                  train_freq=1, value_coef=0.1, ent_coef=0.1,

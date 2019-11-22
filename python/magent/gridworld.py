@@ -283,7 +283,7 @@ class GridWorld(Environment):
         n = self.get_num(handle)
         buf = np.empty((n,), dtype=np.float32)
         _LIB.env_get_reward(self.game, handle,
-                            buf.ctypes.data_as(ctypes.POINTER(ctypes.c_float)))
+                            buf.ctypes.data_as(ctypes.POINTER(ctypes.c_float)))  # 这里不知从哪里引入的这个reward函数。
         return buf
 
     def clear_dead(self):

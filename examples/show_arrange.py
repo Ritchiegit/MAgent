@@ -14,7 +14,7 @@ from magent.renderer.server import ArrangeServer as Server
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", type=int, default=0, help="0: without maze, 1: adding a maze")
-    parser.add_argument("--mess", type=str, nargs="+", help="words you wanna print", required=True)
+    parser.add_argument("--mess", type=str, nargs="+", help="words you wanna print", required=True)  # required 当前参数是否可以省略
     args = parser.parse_args()
 
     magent.utility.check_model('arrange')

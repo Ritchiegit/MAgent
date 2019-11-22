@@ -1,5 +1,5 @@
 """
-Train a single model by self-play
+Train a single model by self-play 自模拟
 """
 
 
@@ -24,15 +24,17 @@ def generate_map(env, map_size, handles):
     n = init_num
     side = int(math.sqrt(n)) * 2
     pos = []
+    # 初始化的时候的左半圆handles[1]掌控的agent
     for x in range(width//2 - gap - side, width//2 - gap - side + side, 2):
         for y in range((height - side)//2, (height - side)//2 + side, 2):
             pos.append([x, y, 0])
-    env.add_agents(handles[0], method="custom", pos=pos)
+    env.add_agents(handles[0], method="custom", pos=pos)  # 添加agent
 
     # right
     n = init_num
     side = int(math.sqrt(n)) * 2
     pos = []
+    # 初始化的时候的右半圆handles[2]掌控的agent
     for x in range(width//2 + gap, width//2 + gap + side, 2):
         for y in range((height - side)//2, (height - side)//2 + side, 2):
             pos.append([x, y, 0])
@@ -41,11 +43,12 @@ def generate_map(env, map_size, handles):
 
 def play_a_round(env, map_size, handles, models, print_every, train=True, render=False, eps=None):
     env.reset()
-    generate_map(env, map_size, handles)
+    generate_map(env, map_size, handles)  # 调用上面的函数初始化两团agent
 
     step_ct = 0
     done = False
 
+    # 存放obs ids act reward
     n = len(handles)
     obs  = [[] for _ in range(n)]
     ids  = [[] for _ in range(n)]
@@ -63,7 +66,17 @@ def play_a_round(env, map_size, handles, models, print_every, train=True, render
             obs[i] = env.get_observation(handles[i])
             ids[i] = env.get_agent_id(handles[i])
             acts[i] = models[i].infer_action(obs[i], ids[i], 'e_greedy', eps=eps)
+            # 这里直接对env进行修改我认为有问题，因为原本t时刻的action仅由t-1时刻的状态决定
+            # 但如果这样的话，就会使得前面先被更新的agent的行为可以被后更新的agent观察到
+            # 故，不符合对t-1时间的依赖 PS.先被更新的更吃亏
+
             env.set_action(handles[i], acts[i])
+            # 我认为应该将上面这行更改为如下三行
+        """
+        for i in range(n):
+            acts[i] = models[i].fetch_action()  # fetch actions (blocking)  # 将每个智能体的行为添加到环境中
+            env.set_action(handles[i], acts[i])
+        """
 
         # simulate one step
         done = env.step()
@@ -74,6 +87,7 @@ def play_a_round(env, map_size, handles, models, print_every, train=True, render
             rewards = env.get_reward(handles[i])
             if train:
                 alives = env.get_alive(handles[i])
+                # TODO 这个在pursuit中没有遇到过 sample_buffer.record_step
                 sample_buffer.record_step(ids[i], obs[i], acts[i], rewards, alives)
             s = sum(rewards)
             step_reward.append(s)
@@ -114,7 +128,7 @@ def play_a_round(env, map_size, handles, models, print_every, train=True, render
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--save_every", type=int, default=5)
+    parser.add_argument("--save_every",     type=int, default=5)
     parser.add_argument("--render_every", type=int, default=10)
     parser.add_argument("--n_round", type=int, default=2000)
     parser.add_argument("--render", action="store_true")
