@@ -26,11 +26,28 @@ sudo apt-get install cmake libboost-system-dev libjsoncpp-dev libwebsocketpp-dev
 bash build.sh
 export PYTHONPATH=$(pwd)/python:$PYTHONPATH
 
+conda install matplotlib
 sudo pip install pygame
 sudo pip install tensorflow==1.5.0
+需要cuda
+
+# 如果想使用yum
 ```
 
+PS:
+
+将MAgent/python路径加入Python搜索路径
+
+![SetPycharmPath](data/figure/set_pycharm_path.png)
+
+Work directory 记得设为MAgent
+
+![WorkDirectory](data/figure/set_pycharm_work_directory.png)
+
+
+
 ## Install on OSX
+
 **Note: There is an issue with homebrew for installing websocketpp, please refer to [#17](https://github.com/geek-ai/MAgent/issues/17)**
 ```bash
 git clone git@github.com:geek-ai/MAgent.git
@@ -146,8 +163,6 @@ scripts里面放置了一堆绘图函数+test(一堆测试文件，应该也是�
 2. train_pursuit.py
 3. api.demo.py
 
-
-
 1. show_arragen.py
 2. train_single.py 其实所有的train的代码都类似
    1. 生成地图 地图的形状 （在下面设置Reward函数）
@@ -165,9 +180,84 @@ train_single.py
 
 ```
 """
+这里的话，我认为是应该先根据t-1时刻的环境，让t时刻的所有智能体做出选择然后统一更新环境。
+源代码中写成了t-1时的前面的agent已经改变了环境，然后再计算t-1时刻其他的agent，这样不符合根据t-1时刻环境决定t时刻action的前提（其实算是一种作弊行为吧）
 for i in range(n):
     acts[i] = models[i].fetch_action()  # fetch actions (blocking)  # 将每个智能体的行为添加到环境中
     env.set_action(handles[i], acts[i])
 
 """
 ```
+
+### 11.22
+
+看懂show的代码，如何进行渲染的
+
+尝试更改agent训练的代码
+
+1. agent
+   1. attack 方式
+   2. 受伤方式 可能会以reward的形式体现：Reward方式里可能会包括 自己的受损、造成伤害。emmm，KDA？
+   3. 对于环境观察的方式
+2. 环境：
+   1. Reward rules
+   2. 生成地图
+
+### 11.23
+
+配置服务器环境
+
+#### 无法直接使用此命令配置环境
+
+```
+sudo apt-get install cmake libboost-system-dev libjsoncpp-dev libwebsocketpp-dev
+```
+
+服务器版本如下
+
+```bash
+(base) [lqz@gpu02 ~]$ lsb_release -a
+LSB Version:	:core-4.1-amd64:core-4.1-noarch:cxx-4.1-amd64:cxx-4.1-noarch:desktop-4.1-amd64:desktop-4.1-noarch:languages-4.1-amd64:languages-4.1-noarch:printing-4.1-amd64:printing-4.1-noarch
+Distributor ID:	CentOS
+Description:	CentOS Linux release 7.3.1611 (Core) 
+Release:	7.3.1611
+Codename:	Core
+```
+
+centos不能直接使用apt-get，因为CentOS不能安装apt x 
+
+一个包一个包安装，解压包安装cmake 版本总没法更新到cmake3
+
+conda NB！
+
+```shell
+$ conda install cmake 
+$ sudo yum install boost-devel
+$ sudo yum install jsoncpp-devel # https://blog.csdn.net/techkuki/article/details/48130513
+
+# installing WebSocket++  https://airdcpp-web.github.io/docs/installation/websocketpp.html
+$ git clone 	 git://github.com/zaphoyd/websocketpp.git
+$ cd websocketpp
+$ cmake .
+$ sudo make install
+$ cd ..
+# but 这样 bash build.sh 跳的错误，反而 更多了...掀桌.jpg
+```
+
+突然想到，我直接将编译好的文件传过去不就好了吗……
+
+but build 出来的文件 好像不能被git add 添加上，压缩，然后传过去吧。
+
+[压缩](https://blog.csdn.net/songbinxu/article/details/80435665
+)
+
+[scp实现linux文件传输](https://blog.csdn.net/crazy_zh/article/details/89925339) 
+
+### 11.24
+
+看完代码中不懂的地方  # TODO
+
+[train_single_note.md](doc/train_single_note.md)
+
+有空时间再整环境
+

@@ -1,6 +1,6 @@
 """
 Interactive game, Pygame are required.
-Act like a general and dispatch your solders.
+Act like a genera l and dispatch your solders.
 """
 
 import os

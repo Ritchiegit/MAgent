@@ -16,6 +16,7 @@ import magent
 
 def generate_map(env, map_size, handles):
     """ generate a map, which consists of two squares of agents"""
+    # 初始化对战一开始屏幕左右两边的球
     width = height = map_size
     init_num = map_size * map_size * 0.04
     gap = 3
@@ -42,6 +43,7 @@ def generate_map(env, map_size, handles):
 
 
 def play_a_round(env, map_size, handles, models, print_every, train=True, render=False, eps=None):
+    # TODO 这个是怎么可视化的
     env.reset()
     generate_map(env, map_size, handles)  # 调用上面的函数初始化两团agent
 
@@ -63,14 +65,14 @@ def play_a_round(env, map_size, handles, models, print_every, train=True, render
     while not done:
         # take actions for every model
         for i in range(n):
-            obs[i] = env.get_observation(handles[i])
+            obs[i] = env.get_observation(handles[i])  # TODO 3 得到一类agent观察到的值 观察到了什么样的世界
             ids[i] = env.get_agent_id(handles[i])
-            acts[i] = models[i].infer_action(obs[i], ids[i], 'e_greedy', eps=eps)
+            acts[i] = models[i].infer_action(obs[i], ids[i], 'e_greedy', eps=eps)  # TODO 1 这个就是agent的action　包括算法、attack
             # 这里直接对env进行修改我认为有问题，因为原本t时刻的action仅由t-1时刻的状态决定
             # 但如果这样的话，就会使得前面先被更新的agent的行为可以被后更新的agent观察到
             # 故，不符合对t-1时间的依赖 PS.先被更新的更吃亏
 
-            env.set_action(handles[i], acts[i])
+            env.set_action(handles[i], acts[i])  # 将action作用于env　# TODO 2 这里可能会对agent 进行一些攻击等
             # 我认为应该将上面这行更改为如下三行
         """
         for i in range(n):
@@ -84,13 +86,13 @@ def play_a_round(env, map_size, handles, models, print_every, train=True, render
         # sample
         step_reward = []
         for i in range(n):
-            rewards = env.get_reward(handles[i])
+            rewards = env.get_reward(handles[i])  # TODO 2 可能会受伤，根据造成的伤害和自己受伤得到 Reward
             if train:
                 alives = env.get_alive(handles[i])
                 # TODO 这个在pursuit中没有遇到过 sample_buffer.record_step
                 sample_buffer.record_step(ids[i], obs[i], acts[i], rewards, alives)
             s = sum(rewards)
-            step_reward.append(s)
+            step_reward.append(s)  # TODO 这里是使用梯度下降吗
             total_reward[i] += s
 
         # render
@@ -101,7 +103,7 @@ def play_a_round(env, map_size, handles, models, print_every, train=True, render
         nums = [env.get_num(handle) for handle in handles]
 
         # clear dead agents
-        env.clear_dead()
+        env.clear_dead()  # TODO 这里是在哪里受伤呢？ 可能是在上面的 set_env中
 
         if step_ct % print_every == 0:
             print("step %3d,  nums: %s reward: %s,  total_reward: %s " %
