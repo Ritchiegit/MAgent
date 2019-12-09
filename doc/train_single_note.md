@@ -21,6 +21,8 @@ gw.Config会包括config_dict agent_type_dict groups reward_rules 应该是我�
 
 add_reward_rule设置进行反馈的方式
 
+set_action在环境中的应用
+
 # TODO 3 get_observation(handles[1]) 观察到了怎样的环境，如何对其进行修改
 
 更改observation方式 修改cfg.register_agent_type

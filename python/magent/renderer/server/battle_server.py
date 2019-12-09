@@ -95,20 +95,20 @@ class BattleServer(BaseServer):
         eps = 0.05
 
         # init the game
-        env = magent.GridWorld(load_config(map_size))
+        env = magent.GridWorld(load_config(map_size))  # 初始化所在的环境，设置各种参数
 
         handles = env.get_handles()
         models = []
-        models.append(DeepQNetwork(env, handles[0], 'trusty-battle-game-l', use_conv=True))
+        models.append(DeepQNetwork(env, handles[0], 'trusty-battle-game-l', use_conv=True))  # 添加训练完的model
         models.append(DeepQNetwork(env, handles[1], 'trusty-battle-game-r', use_conv=True))
 
         # load model
-        models[0].load(path, 0, 'trusty-battle-game-l')
+        models[0].load(path, 0, 'trusty-battle-game-l')  # 这个和上边可能共同起作用吧。
         models[1].load(path, 0, 'trusty-battle-game-r')
 
         # init environment
         env.reset()
-        generate_map(env, map_size, handles)
+        generate_map(env, map_size, handles)  # 建墙
 
         # save to member variable
         self.env = env
@@ -136,8 +136,8 @@ class BattleServer(BaseServer):
 
         counter = []
         for i in range(len(handles)):
-            acts = models[i].infer_action(obs[i], ids[i], 'e_greedy', eps=self.eps)
-            env.set_action(handles[i], acts)
+            acts = models[i].infer_action(obs[i], ids[i], 'e_greedy', eps=self.eps)  # 得到action
+            env.set_action(handles[i], acts)  # 用这一action影响环境
             counter.append(np.zeros(shape=env.get_action_space(handles[i])))
             for j in acts:
                 counter[-1][j] += 1
@@ -156,7 +156,7 @@ class BattleServer(BaseServer):
         # input()
 
         done = env.step()
-        env.clear_dead()
+        env.clear_dead()  # 调用C程序中的 _LIB.gridworld_clear_dead
 
         return done
 
@@ -165,7 +165,7 @@ class BattleServer(BaseServer):
         if self.done:
             return None
         self.done = self.step()
-        pos, event = self.env._get_render_info(x_range, y_range)
+        pos, event = self.env._get_render_info(x_range, y_range)  # 获得 agent位置和 攻击事件
         print(" fps ", 1 / (time.time() - start))
         return pos, event
 

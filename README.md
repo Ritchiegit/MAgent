@@ -25,8 +25,11 @@ sudo apt-get install cmake libboost-system-dev libjsoncpp-dev libwebsocketpp-dev
 bash build.sh
 export PYTHONPATH=$(pwd)/python:$PYTHONPATH
 
+conda install matplotlib
 sudo pip install pygame
 sudo pip install tensorflow==1.5.0
+需要cuda
+
 
 # 如果想使用yum
 ```
@@ -225,8 +228,6 @@ centos不能直接使用apt-get，因为CentOS不能安装apt x
 
 一个包一个包安装，解压包安装cmake 版本总没法更新到cmake3
 
-conda NB
-
 ```shell
 $ conda install cmake 
 $ sudo yum install boost-devel
@@ -238,9 +239,20 @@ $ cd websocketpp
 $ cmake .
 $ sudo make install
 $ cd ..
+<<<<<<< HEAD
+=======
+# but 这样 bash build.sh 跳的错误，反而 更多了...掀桌.jpg
+>>>>>>> 8481ccbbd7eead13cd6b07156c64cde4cbc81bca
 ```
 
-突然想到，我直接将编译好的文件传过去不就好了吗……
+突然想到，我直接将编译好的文件传过去不就好了吗…
+
+but build 出来的文件 好像不能被git add 添加上，压缩，然后传过去吧。
+
+[压缩](https://blog.csdn.net/songbinxu/article/details/80435665
+)
+
+[scp实现linux文件传输](https://blog.csdn.net/crazy_zh/article/details/89925339) 
 
 ### 11.24
 
@@ -249,6 +261,7 @@ $ cd ..
 [train_single_note.md](doc/train_single_note.md)
 
 有空时间再整环境
+
 
 
 
@@ -274,4 +287,3 @@ Device mapping:
 3. 看看自己的TODO
 
 然后写代码
-
