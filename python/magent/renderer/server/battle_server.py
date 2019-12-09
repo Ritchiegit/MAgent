@@ -11,27 +11,31 @@ from magent.renderer.server import BaseServer
 
 def load_config(map_size):
     gw = magent.gridworld
-    cfg = gw.Config()
+    cfg = gw.Config()  # 这里会包括config_dict agent_type_dict groups reward_rules 应该是我们需要重点设置的对象
 
     cfg.set({"map_width": map_size, "map_height": map_size})
     cfg.set({"minimap_mode": True})
 
     cfg.set({"embedding_size": 10})
 
-    small = cfg.register_agent_type(
+    # 这里是设置了agent
+    small = cfg.register_agent_type(  # 这里可以直接设置agent的类型
         "small",
         {'width': 1, 'length': 1, 'hp': 10, 'speed': 2,
-         'view_range': gw.CircleRange(6), 'attack_range': gw.CircleRange(1.5),
+         'view_range': gw.CircleRange(6), 'attack_range': gw.CircleRange(1.5),  # 观察到的区域，攻击区域
          'damage': 2, 'step_recover': 0.1,
          'step_reward': -0.001, 'kill_reward': 100, 'dead_penalty': -0.05, 'attack_penalty': -1,
          })
 
+    # 添加 左右两组group
     g0 = cfg.add_group(small)
     g1 = cfg.add_group(small)
 
+    # 设置Symbol
     a = gw.AgentSymbol(g0, index='any')
     b = gw.AgentSymbol(g1, index='any')
 
+    # 添加reward_rule
     cfg.add_reward_rule(gw.Event(a, 'attack', b), receiver=a, value=2)
     cfg.add_reward_rule(gw.Event(b, 'attack', a), receiver=b, value=2)
 
@@ -47,6 +51,8 @@ def generate_map(env, map_size, handles):
     gap = 3
     leftID, rightID = 0, 1
 
+
+    # 左右两道墙
     # left
     pos = []
     for y in range(10, 45):

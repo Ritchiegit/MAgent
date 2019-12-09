@@ -83,22 +83,22 @@ class PyGameRenderer(BaseRenderer):
 
         if resolution is None:
             info = pygame.display.Info()
-            resolution = info.current_w, info.current_h
+            resolution = info.current_w, info.current_h  # 初始化 这一分辨率
 
         clock = pygame.time.Clock()
         
-        if full_screen:
+        if full_screen:  # 设置画布的情况
             canvas = pygame.display.set_mode(resolution, pygame.DOUBLEBUF | pygame.FULLSCREEN, 0)
         else:
             canvas = pygame.display.set_mode(resolution, pygame.DOUBLEBUF, 0)
 
         pygame.display.set_caption('MAgent Renderer Window')
-        text_formatter = pygame.font.SysFont(None, text_size, True)
+        text_formatter = pygame.font.SysFont(None, text_size, True)  # 设置字体大小
         banner_formatter = pygame.font.SysFont(None, banner_size, True)
         bigscreen_formatter = pygame.font.SysFont(None, bigscreen_size, True)
 
         map_size, groups, static_info = server.get_info()
-        view_position = [map_size[0] / 2 * grid_size - resolution[0] / 2, 
+        view_position = [map_size[0] / 2 * grid_size - resolution[0] / 2, # 观测的位置
                          map_size[1] / 2 * grid_size - resolution[1] / 2]
         frame_id = 0
 
@@ -125,14 +125,14 @@ class PyGameRenderer(BaseRenderer):
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     done = True
-                elif event.type == pygame.KEYDOWN:
+                elif event.type == pygame.KEYDOWN:  # 好像是按下鼠标的意思
                     #if event.key == pygame.K_g:
                     #    show_grid = not show_grid
                     #else:
                     #    triggered = server.keydown(frame_id, event.key, mouse_x, mouse_y)
                     triggered = server.keydown(frame_id, event.key, mouse_x, mouse_y)
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 4 or event.button == 5:
+                elif event.type == pygame.MOUSEBUTTONDOWN:  # MouseButtonDown
+                    if event.button == 4 or event.button == 5:  # 4、5
                         center_before = (
                             (view_position[0] + resolution[0] / 2) / grid_size,
                             (view_position[1] + resolution[1] / 2) / grid_size

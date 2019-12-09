@@ -202,13 +202,13 @@ class GridWorld(Environment):
     # ====== RUN ======
     def _get_obs_buf(self, group, key, shape, dtype):
         """get buffer to receive observation from c++ engine"""
-        obs_buf = self.obs_bufs[key]
-        if group in obs_buf:
-            ret = obs_buf[group]
-            if shape != ret.shape:
+        obs_buf = self.obs_bufs[key]  # 这算是一个数组一直存储着obs
+        if group in obs_buf:  # 如果在观察到的数据里有
+            ret = obs_buf[group]  # 将这些数据提取出来
+            if shape != ret.shape:  # 将shape规范化
                 ret.resize(shape, refcheck=False)
         else:
-            ret = obs_buf[group] = np.empty(shape=shape, dtype=dtype)
+            ret = obs_buf[group] = np.empty(shape=shape, dtype=dtype)  # 如果没有观察到，则将其置为随机数
 
         return ret
 
@@ -218,7 +218,7 @@ class GridWorld(Environment):
         self.obs_bufs.append({})
         self.obs_bufs.append({})
 
-    def get_observation(self, handle):
+    def get_observation(self, handle):  # 得到一类agent观察到的值
         """ get observation of a whole group
 
         Parameters
@@ -228,16 +228,16 @@ class GridWorld(Environment):
         Returns
         -------
         obs : tuple (views, features)
-            views is a numpy array, whose shape is n * view_width * view_height * n_channel
-            features is a numpy array, whose shape is n * feature_size
-            for agent i, (views[i], features[i]) is its observation at this step
+            views is a numpy array, whose shape is n * view_width * view_height * n_channel  n个元素x长宽xn_channel
+            features is a numpy array, whose shape is n * feature_size  n个元素 x 所有feature
+            for agent i, (views[i], features[i]) is its observation at this step 最后两个包成一个元组输出出去
         """
-        view_space = self.view_space[handle.value]
-        feature_space = self.feature_space[handle.value]
-        no = handle.value
+        view_space = self.view_space[handle.value]  # view_space
+        feature_space = self.feature_space[handle.value]  # feature_space
+        no = handle.value  # ???
 
-        n = self.get_num(handle)
-        view_buf = self._get_obs_buf(no, self.OBS_INDEX_VIEW, (n,) + view_space, np.float32)
+        n = self.get_num(handle)  # agent个数
+        view_buf = self._get_obs_buf(no, self.OBS_INDEX_VIEW, (n,) + view_space, np.float32)  # _get_obs_buf 是调用了c++的函数
         feature_buf = self._get_obs_buf(no, self.OBS_INDEX_HP, (n,) + feature_space, np.float32)
 
         bufs = (ctypes.POINTER(ctypes.c_float) * 2)()
