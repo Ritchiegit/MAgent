@@ -262,7 +262,23 @@ but build 出来的文件 好像不能被git add 添加上，压缩，然后传�
 
 有空时间再整环境
 
+### 11.26
 
+配环境
+
+gpu02支持 cuda8.* 的环境
+
+tensorflow-gpu = 1.2 1.3 1.4 测试
+
+报错、解决方案，记录在 [doc/error_solution.md](doc/error_solution.md)
+
+### 11.29
+
+MAgent传过去，GPU02上不能运行
+
+服务器环境配置
+
+cuda、cudnn、tensorflow 版本一致
 
 
 ### 12.06
@@ -270,6 +286,8 @@ but build 出来的文件 好像不能被git add 添加上，压缩，然后传�
 前几天读论文去了
 
 前天看了一部分论文，但是在本机ubuntu上运行了Chrome 的安装程序，系统就循环启动了，这次确实没有用apt-get update。总不能一直不用apt-get update，什么软件也不敢安装，一直一套torch0.4.1走天下。于是重装系统，探索更加适合的驱动、cuda、cuDNN。用了昨天一下午的时间。
+
+详见 [doc/安装笔记.md](doc/安装笔记.md)
 
 贴个运行结果
 
@@ -287,3 +305,30 @@ Device mapping:
 3. 看看自己的TODO
 
 然后写代码
+
+
+
+### 12.07
+
+相关论文都是比较大的改进，没有人介绍某个attack action是怎么改进的。
+
+看代码
+
+1. attack 方式
+2. reward 方式
+3. 环境场景设置
+
+gpu 02 配置遇到的问题
+
+1. 无法编译MAgent源码
+2. libcufft 被污染
+3. conda CuDNN library 版本匹配
+4. lqz用户下CUBLAS_STATUS_NOT_INITIALIZED
+5. root 用户下 cuDNN版本不匹配
+
+### 12.10
+
+TODO 1 仔细分析完成笔记
+
+
+
