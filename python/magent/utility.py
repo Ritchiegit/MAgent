@@ -57,7 +57,7 @@ class EpisodesBuffer:
                 if entry is None:
                     if self.is_full:
                         continue
-                    else:
+                    else:  # 后面这几行有区别，但是还不明白是什么意思
                         entry = EpisodesBufferEntry()
                         buffer[ids[i]] = entry
                         if len(buffer) >= self.capacity:
@@ -100,6 +100,7 @@ def piecewise_decay(now_step, anchor, anchor_value):
     anchor_value: list of float
         value at corresponding anchor
     """
+    # 将各个点连接起来，取now_step位置的值，返回，如果now_step已经超过的最后一个时间点，则返回最后一个时间点的数值
     i = 0
     while i < len(anchor) and now_step >= anchor[i]:
         i += 1

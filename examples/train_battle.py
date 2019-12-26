@@ -18,8 +18,8 @@ def generate_map(env, map_size, handles):
     init_num = map_size * map_size * 0.04
     gap = 3
 
-    global leftID, rightID
-    leftID, rightID = rightID, leftID
+    global leftID, rightID  # 这个还调换了一下...
+    leftID, rightID = rightID, leftID  # emmmm....
 
     # left
     n = init_num
@@ -117,6 +117,7 @@ def play_a_round(env, map_size, handles, models, print_every, train=True, render
         print("===== train =====")
         start_time = time.time()
 
+        # 这里对多个模型都进行训练
         # train models in parallel
         for i in range(n):
             models[i].train(print_every=1000, block=False)

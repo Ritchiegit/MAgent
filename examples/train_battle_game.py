@@ -22,6 +22,7 @@ def generate_map(env, map_size, handles):
     gap = 3
     leftID, rightID = 0, 1
 
+    # 这边是生成了两面墙
     # left
     pos = []
     for y in range(10, 45):
@@ -95,14 +96,14 @@ def play_a_round(env, map_size, handles, models, print_every, train=True, render
         for i in range(n):
             rewards = env.get_reward(handles[i])
             pos = env.get_pos(handles[i])
-            for (x, y) in pos:
+            for (x, y) in pos:  # reward 会改变
                 rewards -= ((1.0 * x / map_size - 0.5) ** 2 + (1.0 * y / map_size - 0.5) ** 2) / 100
             if train:
                 alives = env.get_alive(handles[i])
                 # store samples in replay buffer (non-blocking)
                 models[i].sample_step(rewards, alives, block=False)
             s = sum(rewards)
-            step_reward.append(s)
+            step_reward.append(s)  # 只是用于输出
             total_reward[i] += s
 
         # render
@@ -124,6 +125,8 @@ def play_a_round(env, map_size, handles, models, print_every, train=True, render
             print("step %3d,  nums: %s reward: %s,  total_reward: %s " %
                   (step_ct, nums, np.around(step_reward, 2), np.around(total_reward, 2)))
 
+
+        # 随机放置一些点
         step_ct += 1
         if step_ct % 50 == 0 and counter >= 0:
             counter -= 1
@@ -200,7 +203,7 @@ if __name__ == "__main__":
         print("sample eval set...")
         env.reset()
         generate_map(env, args.map_size, handles)
-        for i in range(len(handles)):
+        for i in range(len(handles)):  # 对不同的handle进行观察
             eval_obs[i] = magent.utility.sample_observation(env, handles, 2048, 500)
 
     # load models

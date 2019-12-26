@@ -458,23 +458,24 @@ class GridWorld(Environment):
             n += self.get_num(handle)
 
         buf = np.empty((n+1, 4), dtype=np.int32)
-        buf[0] = x_range[0], y_range[0], x_range[1], y_range[1]
+        buf[0] = x_range[0], y_range[0], x_range[1], y_range[1]  # 最小最大横纵坐标
         _LIB.env_get_info(self.game, -1, b"render_window_info",
                           buf.ctypes.data_as(ctypes.POINTER((ctypes.c_int32))))
 
         # the first line is for the number of agents in the window range
         info_line = buf[0]
-        agent_ct, attack_event_ct = info_line[0], info_line[1]
-        buf = buf[1:1 + info_line[0]]
+        agent_ct, attack_event_ct = info_line[0], info_line[1]  # agent个数、attack_event个数
+        buf = buf[1:1 + info_line[0]]  # 取其中agent_ct个是有效的
 
         agent_info = {}
-        for item in buf:
+        for item in buf:  # 将三个参数 赋值给对应agent
             agent_info[item[0]] = [item[1], item[2], item[3]]
 
+        # 重新获取关于战斗的信息
         buf = np.empty((attack_event_ct, 3), dtype=np.int32)
         _LIB.env_get_info(self.game, -1, b"attack_event",
                           buf.ctypes.data_as(ctypes.POINTER((ctypes.c_int32))))
-        attack_event = buf
+        attack_event = buf  # 获得过来
 
         return agent_info, attack_event
 
@@ -745,13 +746,14 @@ class Config:
         Some note:
         1. if the receiver is not a deterministic agent,
            it must be one of the agents involved in the triggering event
+        1. 如果接受方不是决定性代理，它必须是触发事件中涉及的代理之一。 这个意思是reward不能由两个不重要的agent触发。
 
         Parameters
         ----------
         on: Expr
-            a bool expression of the trigger event
+            a bool expression of the trigger event  # ？？？
         receiver:  (list of) AgentSymbol
-            receiver of this reward rule
+            receiver of this reward rule  # 也许是决定哪些类型的agent受reward rule限定
         value: (list of) float
             value to assign
         terminal: bool

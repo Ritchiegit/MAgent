@@ -26,6 +26,7 @@ def load_config(map_size):
          'damage': 2, 'step_recover': 0.1,
          'step_reward': -0.001, 'kill_reward': 100, 'dead_penalty': -0.05, 'attack_penalty': -1,
          })
+    # 修改参数时要和原来的参数相匹配
 
     # 添加 左右两组group
     g0 = cfg.add_group(small)
@@ -35,9 +36,13 @@ def load_config(map_size):
     a = gw.AgentSymbol(g0, index='any')
     b = gw.AgentSymbol(g1, index='any')
 
+    # gw.Event(a, 'attack', b)
+    # node.op = EventNode.OP_ATTACK  = 7  # 这个 7 好像也没有说什么东西
+    # node.inputs = [subject, args[0]]  = [a, b]
     # 添加reward_rule
     cfg.add_reward_rule(gw.Event(a, 'attack', b), receiver=a, value=2)
     cfg.add_reward_rule(gw.Event(b, 'attack', a), receiver=b, value=2)
+    # 这个rule 被加入环境 rule的列表中了，怎么被利用呢？
 
     return cfg
 
@@ -53,6 +58,23 @@ def generate_map(env, map_size, handles):
 
 
     # 左右两道墙
+    pos = []
+    for y in range(height//10, height*4//10):
+        pos.append((width / 2 - 5, y))
+        pos.append((width / 2 - 4, y))
+    for y in range(height*5//10, height*9//10):
+        pos.append((width / 2 - 5, y))
+        pos.append((width / 2 - 4, y))
+
+    for y in range(height*6//10, height*9//10):
+        pos.append((width / 2 + 5, y))
+        pos.append((width / 2 + 4, y))
+    for y in range(height//10, height*5//10):
+        pos.append((width / 2 + 5, y))
+        pos.append((width / 2 + 4, y))
+    # env.add_walls(pos=pos, method="custom")
+
+    """
     # left
     pos = []
     for y in range(10, 45):
@@ -69,7 +91,9 @@ def generate_map(env, map_size, handles):
         pos.append((width / 2 + 5, y))
         pos.append((width / 2 + 4, y))
     env.add_walls(pos=pos, method="custom")
+    """
 
+    # 添加左右的两团agent
     n = init_num
     side = int(math.sqrt(n)) * 2
     pos = []
@@ -97,6 +121,8 @@ class BattleServer(BaseServer):
         # init the game
         env = magent.GridWorld(load_config(map_size))  # 初始化所在的环境，设置各种参数
 
+        # 在这里 载入模型 model.append(DeepQNetwork())
+        # 但这两个参数又是从哪里读出的呢？
         handles = env.get_handles()
         models = []
         models.append(DeepQNetwork(env, handles[0], 'trusty-battle-game-l', use_conv=True))  # 添加训练完的model
@@ -116,9 +142,9 @@ class BattleServer(BaseServer):
         self.eps = eps
         self.models = models
         self.map_size = map_size
-        self.total_step = total_step
-        self.add_interval = add_interval
-        self.add_counter = add_counter
+        self.total_step = total_step  #
+        self.add_interval = add_interval  #
+        self.add_counter = add_counter  #
         self.done = False
         print(env.get_view2attack(handles[0]))
         plt.show()
@@ -127,6 +153,8 @@ class BattleServer(BaseServer):
         return (self.map_size, self.map_size), self.env._get_groups_info(), {'wall': self.env._get_walls_info()}
 
     def step(self):
+        # 模拟单步(如果本步就已经结束了，就没有下一步了)
+        # 用于model[i].infer_action 和 env.set_action() 之后进行单步模拟
         handles = self.handles
         models = self.models
         env = self.env
@@ -138,7 +166,8 @@ class BattleServer(BaseServer):
         for i in range(len(handles)):
             acts = models[i].infer_action(obs[i], ids[i], 'e_greedy', eps=self.eps)  # 得到action
             env.set_action(handles[i], acts)  # 用这一action影响环境
-            counter.append(np.zeros(shape=env.get_action_space(handles[i])))
+            # train_battle.py 中虽然也有models[].infer_action() 和 env.set_action()，但 没有下面两行
+            counter.append(np.zeros(shape=env.get_action_space(handles[i])))  # action_space[handle.value]
             for j in acts:
                 counter[-1][j] += 1
         # plt.clf()

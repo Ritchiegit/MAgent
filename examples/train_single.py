@@ -43,7 +43,7 @@ def generate_map(env, map_size, handles):
 
 
 def play_a_round(env, map_size, handles, models, print_every, train=True, render=False, eps=None):
-    # TODO 这个是怎么可视化的
+    # TODO_ 这个是怎么可视化的 show_battle_game.py 可以显示
     env.reset()
     generate_map(env, map_size, handles)  # 调用上面的函数初始化两团agent
 
@@ -56,7 +56,8 @@ def play_a_round(env, map_size, handles, models, print_every, train=True, render
     ids  = [[] for _ in range(n)]
     acts = [[] for _ in range(n)]
     nums = [env.get_num(handle) for handle in handles]
-    sample_buffer = magent.utility.EpisodesBuffer(capacity=1500)
+    # 清空缓冲区以存储agent的所有记录。 一个agent一个入口
+    sample_buffer = magent.utility.EpisodesBuffer(capacity=1500)  # 比train_battle 多一行
     total_reward = [0 for _ in range(n)]
 
     print("===== sample =====")
@@ -75,24 +76,29 @@ def play_a_round(env, map_size, handles, models, print_every, train=True, render
             env.set_action(handles[i], acts[i])  # 将action作用于env　# TODO 2 这里可能会对agent 进行一些攻击等
             # 我认为应该将上面这行更改为如下三行
         """
+        # 可以参考train_battle.py
         for i in range(n):
             acts[i] = models[i].fetch_action()  # fetch actions (blocking)  # 将每个智能体的行为添加到环境中
             env.set_action(handles[i], acts[i])
         """
 
+
         # simulate one step
         done = env.step()
+        # 执行单个步骤，观察是否结束
 
         # sample
         step_reward = []
         for i in range(n):
-            rewards = env.get_reward(handles[i])  # TODO 2 可能会受伤，根据造成的伤害和自己受伤得到 Reward
+            rewards = env.get_reward(handles[i])
+            # TODO_ 2 可能会受伤，根据造成的伤害和自己受伤得到 Reward
+            # 还是使用c函数实现的
             if train:
                 alives = env.get_alive(handles[i])
-                # TODO 这个在pursuit中没有遇到过 sample_buffer.record_step
+                # TODO_ 这个在pursuit中没有遇到过 sample_buffer.record_step
                 sample_buffer.record_step(ids[i], obs[i], acts[i], rewards, alives)
             s = sum(rewards)
-            step_reward.append(s)  # TODO 这里是使用梯度下降吗
+            step_reward.append(s)  # TODO_ 这里是使用梯度下降吗 只是用于展示
             total_reward[i] += s
 
         # render
@@ -103,7 +109,9 @@ def play_a_round(env, map_size, handles, models, print_every, train=True, render
         nums = [env.get_num(handle) for handle in handles]
 
         # clear dead agents
-        env.clear_dead()  # TODO 这里是在哪里受伤呢？ 可能是在上面的 set_env中
+        env.clear_dead()  # TODO_ 这里是在哪里受伤呢？ 是在上面的 set_env中
+
+        # 这里少了几行 if args.train: blabla model check_done()
 
         if step_ct % print_every == 0:
             print("step %3d,  nums: %s reward: %s,  total_reward: %s " %
@@ -115,12 +123,14 @@ def play_a_round(env, map_size, handles, models, print_every, train=True, render
     sample_time = time.time() - start_time
     print("steps: %d,  total time: %.2f,  step average %.2f" % (step_ct, sample_time, sample_time / step_ct))
 
+    # sample_buffer 包含 buffer, capacity, is_full
+
     # train
     total_loss, value = 0, 0
     if train:
         print("===== train =====")
         start_time = time.time()
-        total_loss, value = models[0].train(sample_buffer, 1000)
+        total_loss, value = models[0].train(sample_buffer, 1000)  # 这里是通过sample_buffer 将训练信息传过来
         train_time = time.time() - start_time
         print("train_time %.2f" % train_time)
 
@@ -143,6 +153,7 @@ if __name__ == "__main__":
     parser.add_argument('--alg', default='dqn', choices=['dqn', 'drqn'])
     args = parser.parse_args()
 
+    # 初始化被写在 magent.utility 中 init_logger() 函数中了。
     # set logger
     log.basicConfig(level=log.INFO, filename=args.name + '.log')
     console = log.StreamHandler()
@@ -155,7 +166,7 @@ if __name__ == "__main__":
 
     # two groups of agents
     handles = env.get_handles()
-    
+
     # sample eval observation set
     eval_obs = None
     if args.eval:
@@ -173,7 +184,7 @@ if __name__ == "__main__":
     models = []
     if args.alg == 'dqn':
         from magent.builtin.tf_model import DeepQNetwork
-        models.append(DeepQNetwork(env, handles[0], args.name,
+        models.append(DeepQNetwork(env, handles[0], args.name,  # 这里多加了本行的参数
                                    batch_size=batch_size,
                                    learning_rate=3e-4,
                                    memory_size=2 ** 21, target_update=target_update,
@@ -211,6 +222,7 @@ if __name__ == "__main__":
     for k in range(start_from, start_from + args.n_round):
         tic = time.time()
         eps = magent.utility.piecewise_decay(k, [0, 700, 1400], [1, 0.2, 0.05]) if not args.greedy else 0
+        # 下面就开始训练啦
         loss, num, reward, value = play_a_round(env, args.map_size, handles, models,
                                                 train=args.train, print_every=50,
                                                 render=args.render or (k+1) % args.render_every == 0,
